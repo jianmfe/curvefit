@@ -2,7 +2,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline, lagrange
 
 class PitchInterpolator:
-    def init(self, pitch_ids, metric_values):
+    def __init__(self, pitch_ids, metric_values):
         # guardamos los datos de entrada ordenados por numero de lanzamiento
         self.x = np.asarray(pitch_ids)
         self.y = np.asarray(metric_values)

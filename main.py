@@ -40,5 +40,5 @@ def main():
     
     print("Proceso finalizado con exito. Graficas generadas en el directorio.")
 
-if name == 'main':
+if __name__ == '__main__':
     main()
