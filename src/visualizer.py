@@ -1,95 +1,133 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_pitch_analysis(lanzamientos, metric_real, x_dense, metric_smooth, title, xlabel, ylabel, filename, threshold=None):
-    """
-    Genera una gráfica comparando los datos discretos
-    del partido frente a la curva continua modelada por el spline cúbico.
-    Incluye soporte para líneas de umbral crítico sabermétrico
-    """
-    # Configuramos un estilo oscuro 
-    plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
-    
-    # Ploteo de los puntos discretos reales registrados en el juego
-    ax.scatter(
-        lanzamientos, metric_real, 
-        color='#ff5555', s=90, zorder=5, 
-        label='Datos Registrados (CSV)', edgecolor='#ffffff', linewidth=0.8
-    )
-    
-    # Trazado de la curva continua del spline cúbico con el dominio denso recibido
-    ax.plot(
-        x_dense, metric_smooth, 
-        color='#50fa7b', linewidth=2.5, linestyle='-',
-        label='Interpolación Spline Cúbico ($C^2$)'
-    )
-    
-    # Si se pasa un umbral crítico (ej. línea de alerta de fatiga), se dibuja
-    if threshold is not None:
-        ax.axhline(
-            threshold, color='#ffb86c', linestyle='--', linewidth=1.5, alpha=0.8,
-            label=f'Umbral Crítico ({threshold})'
-        )
-    
-    # Margen estético en el eje X para que los puntos extremos no toquen el borde
-    margin = (lanzamientos[-1] - lanzamientos[0]) * 0.05
-    ax.set_xlim(lanzamientos[0] - margin, lanzamientos[-1] + margin)
-    
-    # Detalles estéticos
-    ax.set_title(title, fontsize=13, fontweight='bold', pad=15, color='#f8f8f2')
-    ax.set_xlabel(xlabel, fontsize=11, labelpad=10, color='#f8f8f2')
-    ax.set_ylabel(ylabel, fontsize=11, labelpad=10, color='#f8f8f2')
-    
-    # Cuadrícula técnica
-    ax.grid(True, linestyle=':', alpha=0.4, color='#6272a4')
-    
-    # Leyenda
-    ax.legend(frameon=True, facecolor='#21222c', edgecolor='#6272a4', fontsize=10)
-    
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
 
-
-def plot_rate_analysis(x_dense, rate_values, title, xlabel, ylabel, filename):
+def _configurar_grafica(ax, title, xlabel, ylabel):
     """
-    Representa la tasa de cambio calculada mediante la derivada
-    del spline cubico
+    Aplica el formato comun a todas las graficas
     """
 
-    # Creamos la figura
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
-
-    # Dibujamos la tasa de cambio
-    ax.plot(
-        x_dense,
-        rate_values,
-        color='#50fa7b',
-        linewidth=2.5,
-        label='Primera derivada del spline'
-    )
-
-    # Añadimos una referencia donde la tasa de cambio es cero
-    ax.axhline(
-        0,
-        color='#ffb86c',
-        linestyle='--',
-        linewidth=1.2,
-        label='Tasa de cambio nula'
-    )
-
-    # Configuramos los detalles de la grafica
+    # Configuramos los titulos y las etiquetas
     ax.set_title(title, fontsize=13, fontweight='bold', pad=15)
     ax.set_xlabel(xlabel, fontsize=11, labelpad=10)
     ax.set_ylabel(ylabel, fontsize=11, labelpad=10)
 
-    ax.grid(True, linestyle=':', alpha=0.4)
-    ax.legend()
+    # Añadimos la cuadrícula y la leyenda
+    ax.grid(True, linestyle=':', alpha=0.4, color='#6272a4')
+    ax.legend(
+        frameon=True,
+        facecolor='#21222c',
+        edgecolor='#6272a4',
+        fontsize=10
+    )
 
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
+
+def plot_pitch_analysis(
+    lanzamientos,
+    metric_real,
+    x_dense,
+    metric_smooth,
+    title,
+    xlabel,
+    ylabel,
+    filename,
+    threshold=None
+):
+    """
+    Representa los datos originales junto con el spline cubico
+    """
+
+    # Aplicamos el estilo oscuro solo a esta figura
+    with plt.style.context('dark_background'):
+
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
+
+        # Mostramos los datos originales
+        ax.scatter(
+            lanzamientos,
+            metric_real,
+            color='#ff5555',
+            s=90,
+            zorder=5,
+            label='Datos originales',
+            edgecolor='#ffffff',
+            linewidth=0.8
+        )
+
+        # Dibujamos la curva del spline cubico
+        ax.plot(
+            x_dense,
+            metric_smooth,
+            color='#50fa7b',
+            linewidth=2.5,
+            label='Spline cubico natural'
+        )
+
+        # Añadimos un umbral si se proporciona
+        if threshold is not None:
+            ax.axhline(
+                threshold,
+                color='#ffb86c',
+                linestyle='--',
+                linewidth=1.5,
+                alpha=0.8,
+                label=f'Umbral de referencia ({threshold})'
+            )
+
+        # Dejamos un pequeño margen a los lados
+        margen = (lanzamientos[-1] - lanzamientos[0]) * 0.05
+        ax.set_xlim(
+            lanzamientos[0] - margen,
+            lanzamientos[-1] + margen
+        )
+
+        _configurar_grafica(ax, title, xlabel, ylabel)
+
+        plt.tight_layout()
+        fig.savefig(filename, dpi=300)
+        plt.close(fig)
+
+
+def plot_rate_analysis(
+    x_dense,
+    rate_values,
+    title,
+    xlabel,
+    ylabel,
+    filename
+):
+    """
+    Representa la primera derivada del spline cubico
+    """
+
+    # Aplicamos el estilo oscuro
+    with plt.style.context('dark_background'):
+
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
+
+        # Dibujamos la tasa de cambio
+        ax.plot(
+            x_dense,
+            rate_values,
+            color='#50fa7b',
+            linewidth=2.5,
+            label='Primera derivada del spline'
+        )
+
+        # Añadimos la referencia de tasa de cambio nula
+        ax.axhline(
+            0,
+            color='#ffb86c',
+            linestyle='--',
+            linewidth=1.2,
+            label='Tasa de cambio nula'
+        )
+
+        _configurar_grafica(ax, title, xlabel, ylabel)
+
+        plt.tight_layout()
+        fig.savefig(filename, dpi=300)
+        plt.close(fig)
+
 
 def plot_interpolation_comparison(
     lanzamientos,
@@ -106,49 +144,44 @@ def plot_interpolation_comparison(
     Compara la interpolacion mediante spline cubico y Lagrange
     """
 
-    # Creamos la figura
-    plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
+    # Aplicamos el estilo oscuro
+    with plt.style.context('dark_background'):
 
-    # Mostramos los datos originales
-    ax.scatter(
-        lanzamientos,
-        metric_real,
-        color='#ff5555',
-        s=70,
-        zorder=5,
-        label='Datos originales',
-        edgecolor='#ffffff',
-        linewidth=0.8
-    )
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=120)
 
-    # Dibujamos el spline cubico
-    ax.plot(
-        x_dense,
-        spline_values,
-        color='#50fa7b',
-        linewidth=2.5,
-        label='Spline cubico natural'
-    )
+        # Mostramos los datos originales
+        ax.scatter(
+            lanzamientos,
+            metric_real,
+            color='#ff5555',
+            s=70,
+            zorder=5,
+            label='Datos originales',
+            edgecolor='#ffffff',
+            linewidth=0.8
+        )
 
-    # Dibujamos el polinomio de Lagrange
-    ax.plot(
-        x_dense,
-        lagrange_values,
-        color='#8be9fd',
-        linewidth=2,
-        linestyle='--',
-        label='Polinomio de Lagrange'
-    )
+        # Dibujamos el spline cubico natural
+        ax.plot(
+            x_dense,
+            spline_values,
+            color='#50fa7b',
+            linewidth=2.5,
+            label='Spline cubico natural'
+        )
 
-    # Configuramos los detalles de la grafica
-    ax.set_title(title, fontsize=13, fontweight='bold', pad=15)
-    ax.set_xlabel(xlabel, fontsize=11, labelpad=10)
-    ax.set_ylabel(ylabel, fontsize=11, labelpad=10)
+        # Dibujamos el polinomio de Lagrange
+        ax.plot(
+            x_dense,
+            lagrange_values,
+            color='#8be9fd',
+            linewidth=2,
+            linestyle='--',
+            label='Polinomio de Lagrange'
+        )
 
-    ax.grid(True, linestyle=':', alpha=0.4, color='#6272a4')
-    ax.legend()
+        _configurar_grafica(ax, title, xlabel, ylabel)
 
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
+        plt.tight_layout()
+        fig.savefig(filename, dpi=300)
+        plt.close(fig)

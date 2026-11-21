@@ -50,6 +50,23 @@ def main():
     release_x = df['release_x'].to_numpy()
     release_y = df['release_y'].to_numpy()
 
+    # Calculamos algunos indicadores estadisticos de la velocidad
+    velocidad_media = np.mean(velocidades)
+    velocidad_maxima = np.max(velocidades)
+    velocidad_minima = np.min(velocidades)
+
+    # Comparamos la primera y la ultima medicion
+    cambio_velocidad = velocidades[-1] - velocidades[0]
+    cambio_porcentual = (cambio_velocidad / velocidades[0]) * 100
+
+    # Mostramos el resumen en consola
+    print("\n===== RESUMEN DEL ANALISIS =====")
+    print(f"Velocidad media: {velocidad_media:.2f} mph")
+    print(f"Velocidad maxima: {velocidad_maxima:.2f} mph")
+    print(f"Velocidad minima: {velocidad_minima:.2f} mph")
+    print(f"Cambio de velocidad: {cambio_velocidad:.2f} mph")
+    print(f"Variacion porcentual: {cambio_porcentual:.2f}%")
+
     # Creamos un rango denso para representar las curvas interpoladas
     x_dense = np.linspace(lanzamientos[0], lanzamientos[-1], 300)
 
@@ -65,6 +82,21 @@ def main():
 
     # Calculamos el polinomio de Lagrange para comparar los metodos
     v_lagrange = interpolador_vel.polinomio_lagrange(x_dense)
+
+    # Comparamos los valores que producen ambos metodos
+    diferencias = np.abs(v_spline - v_lagrange)
+
+    diferencia_maxima = np.max(diferencias)
+    diferencia_media = np.mean(diferencias)
+
+    # Buscamos donde ocurre la mayor diferencia
+    indice_maximo = np.argmax(diferencias)
+    posicion_maxima = x_dense[indice_maximo]
+
+    print("\n===== COMPARACION DE INTERPOLADORES =====")
+    print(f"Diferencia maxima: {diferencia_maxima:.6f} mph")
+    print(f"Diferencia media: {diferencia_media:.6f} mph")
+    print(f"Mayor diferencia en pitch_id: {posicion_maxima:.2f}")
 
     # Calculamos la tasa de cambio de la velocidad
     tasa_velocidad = interpolador_vel.tasa_cambio(x_dense)
